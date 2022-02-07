@@ -44,7 +44,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void downloadFile() async {
     await DynamicAssets().downloadAssets(
-        "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-zip-file.zip", //"https://github.com/sabine33/flutter_dynamic_assets/blob/master/assets.zip?raw=true",
+        "https://raw.githubusercontent.com/sabine33/flutter_dynamic_assets/master/assets.zip",
         null,
         'assets.zip', onReceiveProgress: (downloaded, total) {
       print(downloaded);
@@ -52,9 +52,13 @@ class _MyHomePageState extends State<MyHomePage> {
         _counter += downloaded;
       });
     });
-    print("Download complete");
+    // print("Download complete");
 
     await DynamicAssets().extractZip(null, 'assets.zip');
+
+    var filename = await DynamicAssets().getDownloadedContentPath(null, '.jpg');
+    downloadedFile = File(filename);
+    setState(() {});
   }
 
   void getPermission() async {

@@ -33,6 +33,7 @@ class DynamicAssets {
     String _dir = dir ?? (await getApplicationDocumentsDirectory()).path;
 
     if (!await _hasToDownloadAssets(filename, _dir)) {
+      print("No need to download.");
       return;
     }
 
@@ -54,8 +55,9 @@ class DynamicAssets {
 
   Future<void> extractZip(String? dir, String filename) async {
     dir = dir ?? (await getApplicationDocumentsDirectory()).path;
-
+    print(dir);
     final zippedFile = File('$dir/$filename');
+    print(zippedFile.lengthSync());
     var bytes = zippedFile.readAsBytesSync();
     var archive = ZipDecoder().decodeBytes(bytes);
     for (var file in archive) {
@@ -68,17 +70,14 @@ class DynamicAssets {
     }
   }
 
-  Future<bool> _hasToDownloadAssets(String name, String dir) async {
-    var file = File('$dir/$name.zip');
+  Future<bool> _hasToDownloadAssets(String dir, String filename) async {
+    var file = File('$dir/$filename');
     return !(await file.exists());
   }
 
-  Widget getDownloadedContent(String dir, String filename, bool isAsset) {
-    if (!isAsset) {
-      var file = _getDownloadedFile(filename, dir);
-      return Image.file(file);
-    }
-    return Image.asset('assets/images/$filename');
+  Future<String> getDownloadedContentPath(String? dir, String filename) async {
+    dir = dir ?? (await getApplicationDocumentsDirectory()).path;
+    return '$dir/$filename';
   }
 
   File _getDownloadedFile(String name, String dir) {
