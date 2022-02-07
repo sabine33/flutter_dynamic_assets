@@ -56,7 +56,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     await DynamicAssets().extractZip(null, 'assets.zip');
 
-    var filename = await DynamicAssets().getDownloadedContentPath(null, '.jpg');
+    var filename = await DynamicAssets()
+        .getDownloadedContentPath(null, 'images/alphabets/1_kalama.png');
     downloadedFile = File(filename);
     setState(() {});
   }
