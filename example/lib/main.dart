@@ -32,7 +32,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  double _counter = 0;
+  List<String> filelist = [];
   late File? downloadedFile;
 
   @override
@@ -43,23 +44,32 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void downloadFile() async {
-    await DynamicAssets().downloadAssets(
-        "https://raw.githubusercontent.com/sabine33/flutter_dynamic_assets/master/assets.zip",
-        null,
-        'assets.zip', onReceiveProgress: (downloaded, total) {
-      print(downloaded);
-      setState(() {
-        _counter += downloaded;
+    final dynamicAssets = DynamicAssets();
+    if (await dynamicAssets.checkIfFileExists(null, 'alphabets.zip') == false) {
+      await DynamicAssets().downloadAssets(
+          "https://raw.githubusercontent.com/sabine33/flutter_dynamic_assets/master/alphabets.zip",
+          null,
+          'alphabets.zip', onReceiveProgress: (downloaded, total) {
+        // print(downloaded);
+        setState(() {
+          _counter += (downloaded / total) * 100;
+        });
       });
-    });
-    // print("Download complete");
-
-    await DynamicAssets().extractZip(null, 'assets.zip');
-
-    var filename = await DynamicAssets()
-        .getDownloadedContentPath(null, 'images/alphabets/1_kalama.png');
-    downloadedFile = File(filename);
+      await dynamicAssets.extractZip(null, 'alphabets.zip');
+      var filename = await dynamicAssets.getDownloadedContentPath(
+          null, 'alphabets/1_kalama.png');
+      downloadedFile = File(filename);
+    } else {
+      print("File already exists");
+    }
+    filelist = (await dynamicAssets.getAllFiles(null, '', false))
+        .map((e) => e.path)
+        .toList();
+    print(filelist);
+    filelist.sort((a, b) => b.compareTo(a));
     setState(() {});
+
+    // print("Download complete");
   }
 
   void getPermission() async {
@@ -76,13 +86,27 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+            LinearProgressIndicator(
+              value: _counter,
             ),
             downloadedFile != null
                 ? Image.file(downloadedFile!)
                 : CircularProgressIndicator(),
+            Expanded(
+              child: filelist.length > 0
+                  ? GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 200,
+                              childAspectRatio: 3 / 2,
+                              crossAxisSpacing: 20,
+                              mainAxisSpacing: 20),
+                      itemCount: filelist.length,
+                      itemBuilder: (context, index) {
+                        return Image.file(File(filelist[index]));
+                      })
+                  : Container(),
+            )
           ],
         ),
       ),
